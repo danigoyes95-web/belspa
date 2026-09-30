@@ -1,0 +1,42 @@
+/* efectos/base.css — se carga SIEMPRE, antes del archivo del perfil.
+   Uso: <link rel="stylesheet" href="efectos/base.css"> + <link rel="stylesheet" href="efectos/<perfil>.css">
+   Los colores se definen por cliente en :root (ver README). */
+
+:root {
+  --fx-bg: #ffffff;      /* fondo de la página */
+  --fx-deep: #1f2a24;    /* bandas, bordes decorativos */
+  --fx-ink: #111814;     /* texto y sombras sólidas */
+  --fx-accent: #2f6f55;  /* acento de marca */
+  --fx-paper: #ffffff;   /* tarjetas */
+  --fx-pop: #e9a23b;     /* sellos y destacados */
+  --fx-font: system-ui, sans-serif;
+  --fx-ease: cubic-bezier(.2, .7, .2, 1);
+}
+
+@keyframes fx-entra { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes fx-lado  { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
+@keyframes fx-slide { to { transform: translateX(calc(-50% - 6px)); } }
+@keyframes fx-giro  { to { transform: rotate(360deg); } }
+
+/* Aparición al cargar (para el momento protagonista del hero). Retrasos: .fx-d1 … .fx-d4 */
+.fx-entra { animation: fx-entra .8s var(--fx-ease) both; }
+.fx-d1 { animation-delay: .05s; } .fx-d2 { animation-delay: .2s; }
+.fx-d3 { animation-delay: .35s; } .fx-d4 { animation-delay: .5s; }
+
+/* Aparición al hacer scroll. Opt-in: úsalo en 1–3 elementos clave, no en cada sección.
+   Sin soporte del navegador, el contenido se ve normal. */
+@supports (animation-timeline: view()) {
+  .fx-rv { animation: fx-entra linear both; animation-timeline: view(); animation-range: entry 0% cover 28%; }
+}
+
+/* Contador animado de 0 a N: <span class="fx-contador" style="--fx-hasta: 9"></span> */
+@property --fx-n { syntax: '<integer>'; initial-value: 0; inherits: false; }
+@keyframes fx-contar { from { --fx-n: 0; } to { --fx-n: var(--fx-hasta, 10); } }
+.fx-contador { animation: fx-contar 1.8s ease-out .3s both; counter-reset: fx var(--fx-n); }
+.fx-contador::after { content: counter(fx); }
+
+/* Accesibilidad: sin movimiento, todo queda en su estado final. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .fx-contador { --fx-n: var(--fx-hasta, 10); }
+}

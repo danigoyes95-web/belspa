@@ -1,0 +1,27 @@
+/* efectos/calma.css — Perfil CALMA Y CONFIANZA (spa, estética, clínicas, dentistas, psicólogos).
+   Origen: demo Belén Alvarez. Ritmo lento (0.6–1 s), sin rebotes, sin giros bruscos. */
+
+/* Motivo de marca girando muy lento de fondo (un SVG con el símbolo del logo) */
+.fx-motivo { position: absolute; pointer-events: none; opacity: .09; animation: fx-giro 90s linear infinite; }
+
+/* Tarjeta que se eleva suave */
+.fx-tarjeta { transition: transform .45s ease, box-shadow .45s ease; }
+
+/* Paso de un flujo (diagnóstico, formulario) que entra desde el costado.
+   Para que se repita en cada paso, cada paso debe ser un elemento distinto. */
+.fx-paso { animation: fx-lado .55s var(--fx-ease) both; }
+.fx-barra { transition: width .6s var(--fx-ease); }
+
+/* Confirmación: círculo que aparece + check que se dibuja + elemento nuevo con pulso */
+@keyframes fx-pop    { 0% { opacity: 0; transform: scale(.4); } 70% { opacity: 1; transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes fx-trazo  { to { stroke-dashoffset: 0; } }
+@keyframes fx-pulso  { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--fx-accent) 45%, transparent); }
+                       100% { box-shadow: 0 0 0 14px transparent; } }
+.fx-pop   { animation: fx-pop .6s var(--fx-ease) both; }
+.fx-trazo { stroke-dasharray: 30; stroke-dashoffset: 30; animation: fx-trazo .5s ease-out .45s forwards; }
+.fx-nuevo { animation: fx-entra .6s ease-out both, fx-pulso 1.4s ease-out .6s 2; }
+
+@media (hover: hover) {
+  .fx-tarjeta:hover { transform: translateY(-6px); box-shadow: 0 18px 36px color-mix(in srgb, var(--fx-accent) 14%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) { .fx-trazo { stroke-dashoffset: 0; } }

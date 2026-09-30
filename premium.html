@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Agenda tu valoración — Belén Alvarez (Premium)</title>
+<link rel="icon" href="assets/logo.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="efectos/base.css">
+<link rel="stylesheet" href="efectos/calma.css">
+<link rel="stylesheet" href="site.css">
+<style>
+body{background:var(--crema)}
+.cab{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:20px}
+.cab img{height:72px;width:auto}
+.lienzo{display:grid;gap:28px;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));align-items:start;padding-bottom:96px}
+.caja{background:var(--papel);border-radius:28px;padding:clamp(22px,3.5vw,40px);box-shadow:0 18px 40px rgba(0,76,53,.10);display:flex;flex-direction:column;gap:22px}
+.reco{background:var(--arena);border-radius:16px;padding:18px 20px}
+.tag{font-size:13px;font-weight:700;color:var(--dorado)}
+h2.paso{font-size:20px}
+.chips{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));margin-top:12px}
+.chip{min-height:48px;border-radius:14px;border:1.5px solid #CFC4A2;background:#fff;color:var(--tinta);font:700 16px Figtree,sans-serif;cursor:pointer;padding:8px 6px;transition:background-color .2s,color .2s,border-color .2s}
+.chip small{display:block;font-weight:600;font-size:13px}
+.chip .n{display:block;font-family:Marcellus,Georgia,serif;font-weight:400;font-size:24px}
+.chip[aria-pressed="true"]{background:var(--verde);border-color:var(--verde);color:#fff}
+.chip:disabled{background:#EDE6D2;color:#6F6A55;text-decoration:line-through;cursor:not-allowed}
+.datos{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));margin-top:12px}
+.datos label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14px;color:var(--texto)}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--texto);margin-top:12px}
+.consent input{width:20px;height:20px;accent-color:var(--verde);margin-top:1px}
+.agenda{background:var(--papel);border:1px solid #D6CBA4;border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:10px}
+.cita{display:flex;gap:14px}
+.cita .h{width:56px;flex-shrink:0;padding-top:12px;font-weight:700;font-size:14px;color:var(--suave)}
+.cita .c{flex:1;border-radius:12px;padding:10px 14px;background:var(--arena);color:var(--texto)}
+.cita .c.nueva{background:var(--verde);color:#fff}
+.aviso{background:var(--verde);color:#fff;border-radius:20px;padding:20px 22px}
+.check{width:64px;height:64px;border-radius:999px;background:var(--verde);display:flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body data-pagina="premium" data-secciones='["Elegir día y hora","Datos de la clienta","Confirmación","Agenda de Belén"]'>
+<div class="wrap">
+  <div class="cab"><img src="assets/logo.webp" alt="Belén Alvarez Centro Estético &amp; Spa" width="633" height="432"><span class="tag">Agenda tu valoración</span></div>
+  <div class="lienzo">
+    <div class="caja" id="flujo" aria-live="polite"></div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div><div class="tag">Lo que ve Belén</div><h2 class="serif" style="font-size:32px" id="t-agenda"></h2></div>
+      <div class="agenda" id="agenda"></div>
+      <div id="aviso"></div>
+    </div>
+  </div>
+</div>
+<script src="config.js"></script>
+<script>
+const dias = [['Mié','30','sep'],['Jue','1','oct'],['Vie','2','oct'],['Sáb','3','oct'],['Lun','5','oct'],['Mar','6','oct']];
+const slots = ['09:00','10:30','12:00','15:00','16:30','18:00'];
+const citas = [
+  [['10:30','Depilación · Carla M.','Sesión 3 de 6'],['15:00','Masaje · Diana R.','Relajante']],
+  [['09:00','Reducción de medidas · Paola S.','Sesión 5 de 10'],['12:00','Fibrosis · Andrea L.','Control']],
+  [['16:30','Facial Medicube · Sofía V.','Primera vez']],
+  [['09:00','Depilación · María J.','Sesión 1 de 6'],['10:30','Limpieza facial · Gaby T.',''],['12:00','Masaje · Lucía P.','']],
+  [['18:00','Reducción de medidas · Karla B.','Sesión 2 de 10']],
+  [['15:00','Fibrosis · Verónica C.','Control']]
+];
+const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const st = { dia: 1, hora: '', nombre: '', tel: '', consent: false, ok: false };
+const fecha = () => { const d = dias[st.dia]; return `${d[0]} ${d[1]} ${d[2]}`; };
+const listo = () => st.hora && st.nombre.trim().length >= 2 && st.tel.replace(/\D/g, '').length >= 9 && st.consent;
+
+function agenda() {
+  document.getElementById('t-agenda').textContent = 'Su agenda · ' + fecha();
+  const filas = citas[st.dia].map(c => ({ h: c[0], t: c[1], d: c[2] }));
+  if (st.ok) filas.push({ h: st.hora, t: 'Valoración · ' + esc(st.nombre), d: 'Limpieza facial profunda · desde la web', nueva: true });
+  filas.sort((a, b) => a.h.localeCompare(b.h));
+  document.getElementById('agenda').innerHTML = filas.map(f =>
+    `<div class="cita"><div class="h">${f.h}</div><div class="c ${f.nueva ? 'nueva fx-nuevo' : ''}"><b>${f.t}</b><div style="font-size:14px">${f.d}</div></div></div>`).join('');
+  document.getElementById('aviso').innerHTML = st.ok ? `<div class="aviso fx-entra"><div class="tag" style="color:#CFE3D8">Aviso por WhatsApp a Belén</div><div style="margin-top:6px">Nueva valoración: ${esc(st.nombre)} · ${fecha()}, ${st.hora}. Limpieza facial profunda. Primera vez. Quiere empezar esta semana.</div></div>` : '';
+}
+
+function flujo() {
+  const f = document.getElementById('flujo');
+  if (st.ok) {
+    f.innerHTML = `<div class="fx-entra" style="display:flex;flex-direction:column;gap:18px;align-items:flex-start">
+      <div class="check fx-pop"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline class="fx-trazo" points="20 6 9 17 4 12"/></svg></div>
+      <h1 class="serif" style="font-size:clamp(32px,3.6vw,44px);line-height:1.1">¡Listo, ${esc(st.nombre.trim().split(' ')[0])}! Tu valoración está agendada.</h1>
+      <div style="font-size:20px;font-weight:700;color:var(--verde)">${fecha()}, ${st.hora}</div>
+      <p style="margin:0;color:var(--texto);font-size:17px;max-width:46ch">Te enviamos la confirmación por WhatsApp y un recordatorio el día anterior. Si necesitas cambiar la hora, responde a ese mensaje.</p>
+      <button type="button" class="btn btn-borde" id="otra">Ver la demo otra vez</button></div>`;
+    document.getElementById('otra').onclick = () => { Object.assign(st, { dia: 1, hora: '', nombre: '', tel: '', consent: false, ok: false }); flujo(); agenda(); };
+    return;
+  }
+  const oc = citas[st.dia].map(c => c[0]);
+  f.innerHTML = `
+    <div class="reco"><div class="tag">Tu recomendación</div><div class="serif" style="font-size:28px;color:var(--verde)">Limpieza facial profunda</div><div style="font-size:15px;color:var(--texto)">Rostro · Limpieza e hidratación · Es mi primera vez · Esta semana</div></div>
+    <div><h2 class="paso">1. Elige el día</h2><div class="chips">${dias.map((d, i) => `<button type="button" class="chip" data-dia="${i}" aria-pressed="${st.dia === i}"><small>${d[0]}</small><span class="n">${d[1]}</span><small>${d[2]}</small></button>`).join('')}</div></div>
+    <div><h2 class="paso">2. Elige la hora</h2><div class="chips">${slots.map(h => `<button type="button" class="chip" data-hora="${h}" aria-pressed="${st.hora === h}" ${oc.includes(h) ? 'disabled aria-label="' + h + ' ocupada"' : ''}>${h}</button>`).join('')}</div>
+      <p style="margin:8px 0 0;font-size:14px;color:var(--suave)">Las horas tachadas ya están ocupadas en la agenda de Belén.</p></div>
+    <div><h2 class="paso">3. Tus datos</h2>
+      <div class="datos"><label>Nombre<input class="campo" id="nom" autocomplete="name" value="${esc(st.nombre)}"></label><label>WhatsApp<input class="campo" id="tel" type="tel" autocomplete="tel" placeholder="099 000 0000" value="${esc(st.tel)}"></label></div>
+      <label class="consent"><input type="checkbox" id="con" ${st.consent ? 'checked' : ''}><span>Acepto que ${DEMO.cliente} use mis respuestas solo para preparar mi valoración y contactarme. [ENLACE AVISO DE PRIVACIDAD]</span></label></div>
+    <button type="button" class="btn btn-lleno" id="conf" ${listo() ? '' : 'disabled'}>Confirmar valoración${st.hora ? ' · ' + fecha() + ', ' + st.hora : ''}</button>`;
+  f.querySelectorAll('[data-dia]').forEach(b => b.onclick = () => { st.dia = +b.dataset.dia; st.hora = ''; flujo(); agenda(); });
+  f.querySelectorAll('[data-hora]').forEach(b => b.onclick = () => { st.hora = b.dataset.hora; flujo(); });
+  const upd = () => { const c = document.getElementById('conf'); c.disabled = !listo(); };
+  document.getElementById('nom').oninput = e => { st.nombre = e.target.value; upd(); };
+  document.getElementById('tel').oninput = e => { st.tel = e.target.value; upd(); };
+  document.getElementById('con').onchange = e => { st.consent = e.target.checked; upd(); };
+  document.getElementById('conf').onclick = () => { if (listo()) { st.ok = true; flujo(); agenda(); } };
+}
+flujo(); agenda();
+</script>
+<script src="demo.js"></script>
+</body>
+</html>
